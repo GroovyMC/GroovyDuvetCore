@@ -48,6 +48,9 @@ jackson_dataformat_toml = { module = "com.fasterxml.jackson.dataformat:jackson-d
 autoservice = { module = "com.google.auto.service:auto-service", version.ref = "autoservice" }
 autoextension = { module = "dev.lukebemish.autoextension:autoextension", version.ref = "autoextension" }
 
+# For dependabot
+mdg_dsl = { module = "io.github.groovymc.modsdotgroovy:dsl", version.ref = "mdg_dsl" }
+
 [plugins]
 quilt_loom = { id = "org.quiltmc.loom", version.ref = "quilt_loom" }
 quilt_licenser = { id = "org.quiltmc.gradle.licenser", version.ref = "quilt_licenser" }
