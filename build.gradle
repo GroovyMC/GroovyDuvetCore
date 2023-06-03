@@ -1,0 +1,249 @@
+buildscript {
+    dependencies {
+        classpath libs.tinyremapper
+    }
+}
+
+plugins {
+    id 'groovy'
+    id 'maven-publish'
+    alias libs.plugins.quilt.loom
+    alias libs.plugins.quilt.licenser
+    alias libs.plugins.mdg.plugin
+    alias libs.plugins.machete
+    alias libs.plugins.simpleci
+}
+
+project.buildDir.mkdirs()
+
+final mavenLoginUser = (System.getenv('MAVEN_USER') ?: findProperty('inquisitionMavenUser')) ?: ''
+final mavenLoginPassword = (System.getenv('MAVEN_PASSWORD') ?: findProperty('inquisitionMavenPassword')) ?: ''
+
+tasks.changelog {
+    gitDir = project.file('./')
+    start = '2.1.13'
+}
+
+import org.eclipse.jgit.api.Git
+
+versioning {
+    fromTag.set('2.1.13')
+}
+
+final calculatedVersion = Git.open(project.file("./")).withCloseable {
+    versioning.calculateVersion(it) { cm, info -> }
+}
+
+final versionBasedReleaseType = calculatedVersion.alphaBeta.betaNumber != -1 ? 'beta' : (calculatedVersion.alphaBeta.alphaNumber != -1 ? 'alpha' : 'release')
+
+println("${project.name} version: ${project.version = calculatedVersion.toString()}")
+
+license {
+    rule project.file('header.txt')
+    exclude '**/*.mcmeta'
+}
+
+afterEvaluate {
+    /* tasks.withType(AbstractArchiveTask).configureEach {
+        preserveFileTimestamps = false
+        reproducibleFileOrder = true
+        fileMode = dirMode = 0664
+    } */
+}
+
+static String getGitCommit() {
+    def proc = 'git rev-parse --short HEAD'.execute()
+    proc.waitFor()
+    if (proc.exitValue()) {
+        throw new RuntimeException("Failed to get git commit: ERROR(${proc.exitValue()})")
+    }
+    return proc.text.trim()
+}
+
+static String getGitCommitDate() {
+    def procDate = 'git log -1 --format=%at'.execute()
+    procDate.waitFor()
+    if (procDate.exitValue()) {
+        throw new RuntimeException("Failed to get git commit time: ERROR(${procDate.exitValue()})")
+    }
+    long timestamp = procDate.text.trim() as long * 1000
+    return new Date(timestamp).format(/yyyy-MM-dd HH:mm:ssZ/, TimeZone.getTimeZone("UTC"))
+}
+
+configurations {
+    jacksonResolve
+    includeCompileOnlyApi
+    modCompileOnlyApi.extendsFrom includeCompileOnlyApi
+    include.extendsFrom includeCompileOnlyApi
+
+    includeBundle
+    modCompileOnly.extendsFrom includeBundle
+    include.extendsFrom includeBundle
+}
+
+configurations.configureEach {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        if (details.requested.version == '<jackson-resolve>') {
+            details.useVersion configurations.jacksonResolve.resolvedConfiguration.resolvedArtifacts.find {
+                it.moduleVersion.id.group == details.requested.group && it.moduleVersion.id.name == details.requested.name
+            }.moduleVersion.id.version
+        }
+    }
+}
+
+// Fix TinyRemapper
+configurations.configureEach {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        if (details.requested.module.with {it?.name == 'tiny-remapper' && it?.group == 'net.fabricmc'}) {
+            details.useTarget libs.tinyremapper
+        }
+    }
+}
+
+repositories {
+    // For TinyRemapper sans log spam
+    maven {
+        name = "Luke's Maven"
+        url = 'https://maven.lukebemish.dev/releases'
+    }
+    maven {
+        name = "TheModdingInquisition"
+        url = 'https://maven.moddinginquisition.org/releases'
+    }
+    maven {
+        name = 'ParchmentMC'
+        url = 'https://maven.parchmentmc.org'
+    }
+    mavenCentral()
+}
+
+modsDotGroovy {
+    dslVersion = libs.versions.mdg.dsl.get()
+    platform 'quilt'
+}
+
+dependencies {
+    jacksonResolve libs.groovy.toml
+
+    minecraft libs.minecraft
+    mappings loom.layered() {
+        officialMojangMappings()
+        parchment("org.parchmentmc.data:parchment-${libs.versions.parchment.minecraft.get()}:${libs.versions.parchment.mappings.get()}@zip")
+    }
+    modImplementation libs.quilt.loader
+
+    annotationProcessor libs.autoextension
+    annotationProcessor libs.autoservice
+    compileOnly libs.autoextension
+    compileOnly libs.autoservice
+
+    includeBundle libs.mappingio
+
+    includeCompileOnlyApi libs.groovy.core
+    includeCompileOnlyApi libs.groovy.contracts
+    includeCompileOnlyApi libs.groovy.datetime
+    includeCompileOnlyApi libs.groovy.nio
+    includeCompileOnlyApi libs.groovy.macro.core
+    includeCompileOnlyApi libs.groovy.macro.library
+    includeCompileOnlyApi libs.groovy.templates
+    includeCompileOnlyApi libs.groovy.xml
+    includeCompileOnlyApi libs.groovy.typecheckers
+    includeCompileOnlyApi libs.groovy.dateutil
+    includeCompileOnlyApi libs.groovy.ginq
+    includeCompileOnlyApi libs.groovy.toml
+    includeCompileOnlyApi libs.groovy.json
+
+    includeBundle libs.jackson.core
+    includeBundle libs.jackson.annotations
+    includeBundle libs.jackson.databind
+    includeBundle libs.jackson.dataformat.toml
+}
+
+tasks.named('jar', Jar) {
+    from(project.file("LICENSE")) {
+        rename { "${it}-${archivesBaseName}" }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.encoding = "UTF-8"
+    it.options.release = 17
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+    withSourcesJar()
+}
+
+processResources {
+    inputs.property "version", version
+
+    filesMatching('META-INF/groovy/') {
+        expand "version": version
+    }
+}
+
+tasks.withType(GroovyCompile) {
+    groovyOptions.optimizationOptions.indy = true
+    groovyOptions.optimizationOptions.groovydoc = true
+    it.groovyOptions.javaAnnotationProcessing = true
+    it.exclude('mods.groovy')
+}
+
+tasks.compileGroovy { t ->
+    t.options.compilerArgs += [
+            "-Aautoextension.name=${project.name}",
+            "-Aautoextension.version=${project.version}"
+    ]
+}
+
+jar {
+    manifest.attributes([
+            'Specification-Title': 'GroovyDuvet',
+            'Specification-Vendor': 'Luke Bemish',
+            'Specification-Version': 1,
+            'Implementation-Title':"${archivesBaseName}",
+            'Implementation-Version': project.version,
+            'Implementation-Vendor' : 'Luke Bemish',
+            'Implementation-Commit-Time': getGitCommitDate(),
+            'Implementation-Commit': getGitCommit()
+    ])
+}
+
+machete {
+    keepOriginal = true
+    json.enabled = false
+    png.enabled = false
+    xml.enabled = false
+    lvtStriping.enabled = false
+    sourceFileStriping.enabled = false
+    ignoredTasks.add("jar")
+    additionalTasks.add("remapJar")
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId project.group
+            artifactId project.archivesBaseName
+            version project.version
+            from components.java
+            artifact(changelog.output.get().asFile) {
+                it.builtBy changelog
+                it.extension = 'txt'
+                it.classifier = 'changelog'
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = 'ModdingInquisitionMavenRepo'
+            url = 'https://maven.moddinginquisition.org/releases'
+            credentials {
+                username = mavenLoginUser
+                password = mavenLoginPassword
+            }
+        }
+    }
+}
