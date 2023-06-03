@@ -19,6 +19,7 @@ registries:
     url: https://maven.moddinginquisition.org/releases/
 updates:
   - package-ecosystem: "gradle"
+    directory: "/"
     registries:
       - maven-central
       - fabricmc
