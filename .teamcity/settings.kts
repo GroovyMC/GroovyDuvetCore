@@ -1,13 +1,10 @@
 
 import jetbrains.buildServer.configs.kotlin.BuildType
 import jetbrains.buildServer.configs.kotlin.DslContext
-import jetbrains.buildServer.configs.kotlin.buildFeatures.Swabra
-import jetbrains.buildServer.configs.kotlin.buildFeatures.commitStatusPublisher
-import jetbrains.buildServer.configs.kotlin.buildFeatures.swabra
+import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.gradle
 import jetbrains.buildServer.configs.kotlin.project
 import jetbrains.buildServer.configs.kotlin.triggers.vcs
-import jetbrains.buildServer.configs.kotlin.ui.add
 import jetbrains.buildServer.configs.kotlin.version
 
 /*
@@ -31,6 +28,7 @@ version = "2022.10"
 
 project {
     buildType(GroovyMC_GroovyDuvetCore_Build)
+    buildType(GroovyMC_GroovyDuvetCore_PullRequests)
 }
 
 object GroovyMC_GroovyDuvetCore_Build : BuildType({
@@ -44,6 +42,7 @@ object GroovyMC_GroovyDuvetCore_Build : BuildType({
     triggers {
         vcs {
             triggerRules = "-:comment=\\[noci]:**"
+            branchFilter = "+:main"
         }
     }
 
@@ -79,6 +78,49 @@ object GroovyMC_GroovyDuvetCore_Build : BuildType({
         gradle {
             name = "Publish Gradle Project"
             tasks = "publish"
+        }
+    }
+})
+
+object GroovyMC_GroovyDuvetCore_PullRequests : BuildType({
+    id("PullRequests")
+    name = "PullRequests"
+
+    vcs {
+        root(DslContext.settingsRoot)
+    }
+
+    triggers {
+        vcs {
+            branchFilter = "+:*"
+        }
+    }
+
+    features {
+        swabra {
+            filesCleanup = Swabra.FilesCleanup.BEFORE_BUILD
+            lockingProcesses = Swabra.LockingProcessPolicy.KILL
+        }
+        commitStatusPublisher {
+            publisher = github {
+                githubUrl = "https://api.github.com"
+                authType = personalToken {
+                    token = "%commit_status_publisher%"
+                }
+            }
+        }
+        pullRequests {
+            provider = github {
+                authType = vcsRoot()
+                filterAuthorRole = PullRequests.GitHubRoleFilter.EVERYBODY
+            }
+        }
+    }
+
+    steps {
+        gradle {
+            name = "Build Gradle Project"
+            tasks = "build"
         }
     }
 })
