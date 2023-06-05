@@ -90,12 +90,6 @@ object GroovyMC_GroovyDuvetCore_PullRequests : BuildType({
         root(DslContext.settingsRoot)
     }
 
-    triggers {
-        vcs {
-            branchFilter = "+:*"
-        }
-    }
-
     features {
         swabra {
             filesCleanup = Swabra.FilesCleanup.BEFORE_BUILD
