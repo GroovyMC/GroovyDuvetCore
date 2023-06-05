@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-3.0-or-later
  */
 
-package io.github.lukebemish.groovyduvet.core.impl;
+package org.groovymc.groovyduvet.core.impl;
 
 import org.quiltmc.loader.api.LanguageAdapter;
 import org.quiltmc.loader.api.LanguageAdapterException;
@@ -27,7 +27,7 @@ public class GroovyAdapter implements LanguageAdapter {
                 initialized = true;
                 try {
                     Class<?> adapterImpl =
-                            Class.forName("io.github.lukebemish.groovyduvet.core.impl.GroovyAdapterImpl", true, KNOT_LOADER);
+                            Class.forName("org.groovymc.groovyduvet.core.impl.GroovyAdapterImpl", true, KNOT_LOADER);
                     adapter = ((DelegatedLanguageAdapter) adapterImpl.getConstructor().newInstance());
                 } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException |
                          IllegalAccessException | InvocationTargetException e) {

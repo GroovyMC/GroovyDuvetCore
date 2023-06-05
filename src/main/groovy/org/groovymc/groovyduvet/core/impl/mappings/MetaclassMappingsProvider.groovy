@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: LGPL-3.0-or-later
  */
 
-package io.github.lukebemish.groovyduvet.core.impl.mappings
+package org.groovymc.groovyduvet.core.impl.mappings
 
 import com.google.common.collect.BiMap
 import com.google.common.collect.HashBiMap
 import groovy.json.JsonSlurper
 import groovy.transform.CompileStatic
 import groovy.transform.stc.POJO
-import io.github.lukebemish.groovyduvet.core.impl.compile.ClassMappings
+import org.groovymc.groovyduvet.core.impl.compile.ClassMappings
 import net.fabricmc.api.EnvType
 import net.fabricmc.mappingio.MappedElementKind
 import net.fabricmc.mappingio.MappingVisitor

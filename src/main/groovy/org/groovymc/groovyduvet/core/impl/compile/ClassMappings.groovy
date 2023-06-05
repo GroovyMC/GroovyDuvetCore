@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-3.0-or-later
  */
 
-package io.github.lukebemish.groovyduvet.core.impl.compile
+package org.groovymc.groovyduvet.core.impl.compile
 
 import groovy.transform.CompileStatic
 
@@ -28,7 +28,7 @@ final class ClassMappings {
             def mojPackage = moj.substring(0, moj.lastIndexOf('.'))
             def mojName = moj.substring(moj.lastIndexOf('.') + 1)
             if (!mojToRuntimePackages.containsKey(mojPackage)) {
-                mojToRuntimePackages.put(mojPackage, [:])
+                mojToRuntimePackages.put(mojPackage, new HashMap<>())
             }
             mojToRuntimePackages[mojPackage].put(mojName, runtime)
         }

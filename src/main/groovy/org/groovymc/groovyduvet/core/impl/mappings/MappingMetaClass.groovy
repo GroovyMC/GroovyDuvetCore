@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-3.0-or-later
  */
 
-package io.github.lukebemish.groovyduvet.core.impl.mappings
+package org.groovymc.groovyduvet.core.impl.mappings
 
 import groovy.transform.CompileStatic
 import groovy.transform.stc.POJO
@@ -301,7 +301,7 @@ class MappingMetaClass extends DelegatingMetaClass {
         try {
             super.setAttribute(sender, receiver, messageName, messageValue, useSuper, fromInsideClass)
         } catch (MissingPropertyException | MissingFieldException e) {
-            
+
             if (this.fieldMap!==null) {
                 // Check whether the field is in the mappables
                 // If it is, map it and invoke that method

@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: LGPL-3.0-or-later
  */
 
-package io.github.lukebemish.groovyduvet.core.mixin;
+package org.groovymc.groovyduvet.core.mixin;
 
-import io.github.lukebemish.groovyduvet.core.impl.ExtensionSideChecker;
+import org.groovymc.groovyduvet.core.impl.ExtensionSideChecker;
 import org.codehaus.groovy.runtime.m12n.MetaInfExtensionModule;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

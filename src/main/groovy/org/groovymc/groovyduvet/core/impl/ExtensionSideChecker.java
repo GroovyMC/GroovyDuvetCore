@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-3.0-or-later
  */
 
-package io.github.lukebemish.groovyduvet.core.impl;
+package org.groovymc.groovyduvet.core.impl;
 
 import com.mojang.logging.LogUtils;
 import net.fabricmc.api.EnvType;

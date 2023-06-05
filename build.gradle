@@ -41,6 +41,7 @@ println("${project.name} version: ${project.version = calculatedVersion.toString
 license {
     rule project.file('header.txt')
     exclude '**/*.mcmeta'
+    exclude '**/package-info.java'
 }
 
 afterEvaluate {

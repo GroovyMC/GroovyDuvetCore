@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: LGPL-3.0-or-later
  */
 
-package io.github.lukebemish.groovyduvet.core.api
+package org.groovymc.groovyduvet.core.api
 
 import groovy.transform.CompileStatic
-import io.github.lukebemish.groovyduvet.core.impl.compile.ClassMappings
+import org.groovymc.groovyduvet.core.impl.compile.ClassMappings
 import org.codehaus.groovy.ast.ClassHelper
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.ImportNode
