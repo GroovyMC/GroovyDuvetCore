@@ -24,7 +24,7 @@ To debug in IntelliJ Idea, open the 'Maven Projects' tool window (View
 'Debug' option is available in the context menu for the task.
 */
 
-version = "2023.p5"
+version = "2023.05"
 
 project {
     buildType(GroovyMC_GroovyDuvetCore_Build)
