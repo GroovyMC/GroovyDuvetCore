@@ -60,6 +60,9 @@ object GroovyMC_GroovyDuvetCore_Build : BuildType({
                 }
             }
         }
+        discordNotification {
+            webhookUrl = "%discord_webhook%"
+        }
     }
 
     steps {
