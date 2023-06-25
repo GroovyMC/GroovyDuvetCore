@@ -40,7 +40,7 @@ class GroovyAdapterImpl implements GroovyAdapter.DelegatedLanguageAdapter {
             try {
                 // Different logic for scripts
                 if (parts.size() == 1) {
-                    List<Method> methods = type.declaredMethods.findAll {(it.modifiers && Modifier.ABSTRACT !== 0) }
+                    List<Method> methods = type.declaredMethods.findAll { (it.modifiers & Modifier.ABSTRACT) !== 0 }
                     if (methods.size() == 1) {
                         Method method = methods.get(0)
                         int numParams = method.parameters.size()
