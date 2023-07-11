@@ -220,8 +220,8 @@ class MetaclassMappingsProvider implements PreLaunchEntrypoint {
 
         final BiMap<String, String> mojToObf
 
-        LoadingVisitor(BiMap<String, String> mojToObj) {
-            this.mojToObf = mojToObj
+        LoadingVisitor(BiMap<String, String> mojToObf) {
+            this.mojToObf = mojToObf
         }
 
         @Override

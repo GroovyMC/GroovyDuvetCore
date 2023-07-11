@@ -17,13 +17,14 @@ final class ClassMappings {
     static final Map<String, Map<String, String>> fields = [:]
 
     static addMappings(Map<String, String> mappings, Map<String, Map<String, List<String>>> methods, Map<String, Map<String, String>> fields) {
-        mappings.clear()
-        methods.clear()
-        fields.clear()
+        mojToRuntime.clear()
+        mojToRuntimePackages.clear()
+        ClassMappings.methods.clear()
+        ClassMappings.fields.clear()
 
-        methods.putAll(methods)
-        fields.putAll(fields)
-        mojToRuntime.putAll(mappings)
+        ClassMappings.methods.putAll(methods)
+        ClassMappings.fields.putAll(fields)
+        ClassMappings.mojToRuntime.putAll(mappings)
         mappings.each { moj, runtime ->
             def mojPackage = moj.substring(0, moj.lastIndexOf('.'))
             def mojName = moj.substring(moj.lastIndexOf('.') + 1)

@@ -27,8 +27,6 @@ class MappingMetaClass extends DelegatingMetaClass {
 
     MappingMetaClass(MetaClass delegate, LoadedMappings mappings) {
         super(delegate)
-        Map<String, String> fields = new HashMap<>()
-        Map<String, List<String>> methods = new HashMap<>()
 
         this.fieldMap = getFields(mappings, theClass)
         this.methodMap = getMethods(mappings, theClass)
@@ -326,7 +324,7 @@ class MappingMetaClass extends DelegatingMetaClass {
         Set<String> known = super.getProperties().each {it.name}.<String>toSet()
         this.metaProperties.clear()
         fieldMap.forEach (fieldName, srgFieldName) -> {
-            Field field;
+            Field field
             try {
                 field = this.theClass.getField(srgFieldName)
             } catch (NoSuchFieldException ignored) {

@@ -10,7 +10,6 @@ plugins {
     alias libs.plugins.quilt.loom
     alias libs.plugins.quilt.licenser
     alias libs.plugins.mdg.plugin
-    alias libs.plugins.machete
     alias libs.plugins.simpleci
 }
 
@@ -210,17 +209,6 @@ jar {
             'Implementation-Commit-Time': getGitCommitDate(),
             'Implementation-Commit': getGitCommit()
     ])
-}
-
-machete {
-    keepOriginal = true
-    json.enabled = false
-    png.enabled = false
-    xml.enabled = false
-    lvtStriping.enabled = false
-    sourceFileStriping.enabled = false
-    ignoredTasks.add("jar")
-    additionalTasks.add("remapJar")
 }
 
 publishing {

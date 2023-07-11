@@ -13,7 +13,6 @@ autoservice = "1.1.1"
 autoextension = "0.1.1"
 mdg_plugin = "1.4.1"
 mdg_dsl = "1.5.0"
-machete = "2.0.1"
 simpleci = "0.1.24"
 
 tinyremapper = "0.8.6+lukebemish.1+local"
@@ -55,5 +54,4 @@ mdg_dsl = { module = "io.github.groovymc.modsdotgroovy:dsl", version.ref = "mdg_
 quilt_loom = { id = "org.quiltmc.loom", version.ref = "quilt_loom" }
 quilt_licenser = { id = "org.quiltmc.gradle.licenser", version.ref = "quilt_licenser" }
 mdg_plugin = { id = "io.github.groovymc.modsdotgroovy", version.ref = "mdg_plugin" }
-machete = { id = "io.github.p03w.machete", version.ref = "machete" }
 simpleci = { id = "io.github.groovymc.simpleci", version.ref = "simpleci" }
