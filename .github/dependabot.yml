@@ -8,15 +8,15 @@ registries:
   maven-central:
     type: maven-repository
     url: https://repo.maven.apache.org/maven2/
+  plugin-portal:
+    type: maven-repository
+    url: https://plugins.gradle.org/m2/
   fabricmc:
     type: maven-repository
     url: https://maven.fabricmc.net/
   quiltmc:
     type: maven-repository
     url: https://maven.quiltmc.org/repository/release/
-  moddinginquisition:
-    type: maven-repository
-    url: https://maven.moddinginquisition.org/releases/
 updates:
   - package-ecosystem: "gradle"
     directory: "/"
@@ -24,30 +24,6 @@ updates:
       - maven-central
       - fabricmc
       - quiltmc
-      - moddinginquisition
+      - plugin-portal
     schedule:
       interval: "weekly"
-    allow:
-      # Bundled
-      - dependency-name: "org.apache.groovy:groovy*"
-      - dependency-name: "net.fabricmc:mapping-io"
-      - dependency-name: "com.google.auto.service:auto-service"
-      - dependency-name: "dev.lukebemish.autoextension:autoextension"
-      # MDG
-      - dependency-name: "io.github.groovymc.modsdotgroovy"
-      - dependency-name: "io.github.groovymc.modsdotgroovy:dsl"
-      # Plugins
-      - dependency-name: "org.quiltmc.loom"
-      - dependency-name: "org.quiltmc.gradle.licenser"
-      - dependency-name: "io.github.groovymc.simpleci"
-    ignore:
-      - dependency-name: "org.apache.groovy:groovy*"
-        update-types: ["version-update:semver-major", "version-update:semver-minor"]
-      - dependency-name: "*autoextension"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "*auto-service"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "*mapping-io"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "*modsdotgroovy*"
-        update-types: ["version-update:semver-major"]
