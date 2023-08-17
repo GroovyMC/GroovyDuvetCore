@@ -7,16 +7,15 @@ buildscript {
 plugins {
     id 'groovy'
     id 'maven-publish'
+    id 'signing'
     alias libs.plugins.quilt.loom
     alias libs.plugins.quilt.licenser
     alias libs.plugins.mdg.plugin
     alias libs.plugins.simpleci
+    alias libs.plugins.nexuspublish
 }
 
 project.buildDir.mkdirs()
-
-final mavenLoginUser = (System.getenv('MAVEN_USER') ?: findProperty('inquisitionMavenUser')) ?: ''
-final mavenLoginPassword = (System.getenv('MAVEN_PASSWORD') ?: findProperty('inquisitionMavenPassword')) ?: ''
 
 tasks.changelog {
     gitDir = project.file('./')
@@ -32,8 +31,6 @@ versioning {
 final calculatedVersion = Git.open(project.file("./")).withCloseable {
     versioning.calculateVersion(it) { cm, info -> }
 }
-
-final versionBasedReleaseType = calculatedVersion.alphaBeta.betaNumber != -1 ? 'beta' : (calculatedVersion.alphaBeta.alphaNumber != -1 ? 'alpha' : 'release')
 
 println("${project.name} version: ${project.version = calculatedVersion.toString()}")
 
@@ -107,10 +104,6 @@ repositories {
         url = 'https://maven.lukebemish.dev/releases'
     }
     maven {
-        name = "TheModdingInquisition"
-        url = 'https://maven.moddinginquisition.org/releases'
-    }
-    maven {
         name = 'ParchmentMC'
         url = 'https://maven.parchmentmc.org'
     }
@@ -176,12 +169,15 @@ java {
     withSourcesJar()
 }
 
-processResources {
-    inputs.property "version", version
+groovydoc {
+    use = true
+    exclude 'mods.groovy'
+}
 
-    filesMatching('META-INF/groovy/') {
-        expand "version": version
-    }
+tasks.register('groovydocJar', Jar) {
+    dependsOn groovydoc
+    archiveClassifier.set 'javadoc'
+    from groovydoc.destinationDir
 }
 
 tasks.withType(GroovyCompile) {
@@ -218,21 +214,58 @@ publishing {
             artifactId project.archivesBaseName
             version project.version
             from components.java
+            artifact tasks.groovydocJar
             artifact(changelog.output.get().asFile) {
                 it.builtBy changelog
                 it.extension = 'txt'
                 it.classifier = 'changelog'
             }
-        }
-    }
-    repositories {
-        maven {
-            name = 'ModdingInquisitionMavenRepo'
-            url = 'https://maven.moddinginquisition.org/releases'
-            credentials {
-                username = mavenLoginUser
-                password = mavenLoginPassword
+
+            pom {
+                name = "GroovyDuvetCore"
+                packaging = 'jar'
+                description = 'Core language provider allowing mods written in groovy to run on the quilt loader'
+                url = 'https://github.com/GroovyMC/GroovyDuvetCore'
+                inceptionYear = '2023'
+
+                licenses {
+                    license {
+                        name = 'LGPL 3.0 or later'
+                        url = 'https://opensource.org/license/lgpl-3-0/'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'groovymc'
+                        name = 'GroovyMC'
+                        email = 'holdings@groovymc.org'
+                        url = 'https://github.com/GroovyMC/'
+                    }
+                }
+                scm {
+                    connection='scm:git:git://github.com/GroovyMC/GroovyDuvetCore.git'
+                    url='https://github.com/GroovyMC/GroovyDuvetCore'
+                }
             }
         }
+    }
+}
+
+nexusPublishing {
+    repositories {
+        sonatype {
+            username.set(System.getenv('SONATYPE_USER') ?: '')
+            password.set(System.getenv('SONATYPE_PASSWORD') ?: '')
+            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+        }
+    }
+}
+
+if (System.getenv('SONATYPE_USER')) {
+    signing {
+        final signingKey = System.getenv('SIGNING_KEY') ?: ''
+        final signingPassword = System.getenv('SIGNING_PASSWORD') ?: ''
+        useInMemoryPgpKeys(signingKey, signingPassword)
+        sign publishing.publications.mavenJava
     }
 }

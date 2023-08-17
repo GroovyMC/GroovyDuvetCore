@@ -18,10 +18,6 @@ pluginManagement {
                 excludeModule 'net.fabricmc', 'tiny-remapper'
             }
         }
-        maven {
-            name = "TheModdingInquisition"
-            url = 'https://maven.moddinginquisition.org/releases'
-        }
         gradlePluginPortal()
     }
 }
