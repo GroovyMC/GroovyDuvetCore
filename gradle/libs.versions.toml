@@ -11,7 +11,7 @@ jackson = "<jackson-resolve>"
 autoservice = "1.1.1"
 autoextension = "0.1.1"
 mdg_plugin = "1.4.1"
-mdg_dsl = "1.5.0"
+mdg_dsl = "1.5.1"
 simpleci = "0.2.5"
 nexuspublish = "1.3.0"
 
