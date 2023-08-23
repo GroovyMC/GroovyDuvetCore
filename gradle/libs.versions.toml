@@ -1,11 +1,11 @@
 [versions]
 minecraft = "1.19.4"
-quilt_loader = "0.18.5"
+fabric_loader = "0.14.21"
 parchment_minecraft = "1.19.3"
 parchment_mappings = "2023.03.12"
-groovy = "4.0.13"
+groovy = "4.0.14"
 mappingio = "0.4.2"
-quilt_loom = "1.2.3"
+fabric_loom = "1.2.7"
 quilt_licenser = "2.0.1"
 jackson = "<jackson-resolve>"
 autoservice = "1.1.1"
@@ -19,7 +19,7 @@ tinyremapper = "0.8.6+lukebemish.1+local"
 
 [libraries]
 minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
-quilt_loader = { module = "org.quiltmc:quilt-loader", version.ref = "quilt_loader" }
+fabric_loader = { module = "net.fabricmc:fabric-loader", version.ref = "fabric_loader" }
 
 mappingio = { module = "net.fabricmc:mapping-io", version.ref = "mappingio" }
 
@@ -51,7 +51,7 @@ autoextension = { module = "dev.lukebemish.autoextension:autoextension", version
 mdg_dsl = { module = "org.groovymc.modsdotgroovy:dsl", version.ref = "mdg_dsl" }
 
 [plugins]
-quilt_loom = { id = "org.quiltmc.loom", version.ref = "quilt_loom" }
+fabric_loom = { id = "fabric-loom", version.ref = "fabric_loom" }
 quilt_licenser = { id = "org.quiltmc.gradle.licenser", version.ref = "quilt_licenser" }
 mdg_plugin = { id = "org.groovymc.modsdotgroovy", version.ref = "mdg_plugin" }
 simpleci = { id = "org.groovymc.simpleci", version.ref = "simpleci" }

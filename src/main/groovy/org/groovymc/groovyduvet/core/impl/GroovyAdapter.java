@@ -5,9 +5,9 @@
 
 package org.groovymc.groovyduvet.core.impl;
 
-import org.quiltmc.loader.api.LanguageAdapter;
-import org.quiltmc.loader.api.LanguageAdapterException;
-import org.quiltmc.loader.api.ModContainer;
+import net.fabricmc.loader.api.LanguageAdapter;
+import net.fabricmc.loader.api.LanguageAdapterException;
+import net.fabricmc.loader.api.ModContainer;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.function.Supplier;

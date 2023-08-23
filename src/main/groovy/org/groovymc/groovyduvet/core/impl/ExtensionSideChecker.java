@@ -7,11 +7,11 @@ package org.groovymc.groovyduvet.core.impl;
 
 import com.mojang.logging.LogUtils;
 import net.fabricmc.api.EnvType;
+import net.fabricmc.loader.api.FabricLoader;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Opcodes;
-import org.quiltmc.loader.api.minecraft.MinecraftQuiltLoader;
 import org.slf4j.Logger;
 
 import java.util.Locale;
@@ -48,24 +48,24 @@ public class ExtensionSideChecker {
                                 if (name.equals("value")) {
                                     String s = value.toUpperCase(Locale.ROOT);
                                     if (s.equals("SERVER") || s.equals("DEDICATED_SERVER")) {
-                                        isOnDist.set(MinecraftQuiltLoader.getEnvironmentType() == EnvType.SERVER);
-                                        if (MinecraftQuiltLoader.getEnvironmentType() == EnvType.CLIENT)
+                                        isOnDist.set(FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER);
+                                        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT)
                                             LOGGER.info(skipOnClient, className);
                                     } else if (s.equals("CLIENT")) {
-                                        isOnDist.set(MinecraftQuiltLoader.getEnvironmentType() == EnvType.CLIENT);
-                                        if (MinecraftQuiltLoader.getEnvironmentType() == EnvType.SERVER)
+                                        isOnDist.set(FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT);
+                                        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER)
                                             LOGGER.info(skipOnServer, className);
                                     }
                                 }
                             }
                         };
                     } else if (desc.equals(SERVER_ONLY)) {
-                        isOnDist.set(MinecraftQuiltLoader.getEnvironmentType() == EnvType.SERVER);
-                        if (MinecraftQuiltLoader.getEnvironmentType() == EnvType.CLIENT)
+                        isOnDist.set(FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER);
+                        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT)
                             LOGGER.info(skipOnClient, className);
                     } else if (desc.equals(CLIENT_ONLY)) {
-                        isOnDist.set(MinecraftQuiltLoader.getEnvironmentType() == EnvType.CLIENT);
-                        if (MinecraftQuiltLoader.getEnvironmentType() == EnvType.SERVER)
+                        isOnDist.set(FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT);
+                        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER)
                             LOGGER.info(skipOnServer, className);
                     }
                     return super.visitAnnotation(desc, visible);

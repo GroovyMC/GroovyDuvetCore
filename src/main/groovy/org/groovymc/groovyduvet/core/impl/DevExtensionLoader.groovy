@@ -7,13 +7,12 @@ package org.groovymc.groovyduvet.core.impl
 
 import groovy.transform.CompileStatic
 import groovy.transform.stc.POJO
+import net.fabricmc.loader.api.FabricLoader
+import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint
 import org.codehaus.groovy.reflection.CachedClass
 import org.codehaus.groovy.runtime.m12n.ExtensionModule
 import org.codehaus.groovy.runtime.m12n.ExtensionModuleScanner
 import org.codehaus.groovy.runtime.metaclass.MetaClassRegistryImpl
-import org.quiltmc.loader.api.ModContainer
-import org.quiltmc.loader.api.QuiltLoader
-import org.quiltmc.loader.api.entrypoint.PreLaunchEntrypoint
 
 import java.nio.file.Files
 import java.nio.file.Path
@@ -23,8 +22,8 @@ import java.nio.file.Path
 class DevExtensionLoader implements PreLaunchEntrypoint {
 
     @Override
-    void onPreLaunch(ModContainer mod) {
-        if (QuiltLoader.isDevelopmentEnvironment()) {
+    void onPreLaunch() {
+        if (FabricLoader.instance.developmentEnvironment) {
             if (GroovySystem.metaClassRegistry instanceof MetaClassRegistryImpl) {
                 MetaClassRegistryImpl registry = GroovySystem.metaClassRegistry as MetaClassRegistryImpl
                 Map<CachedClass, List<MetaMethod>> map = [:]
@@ -46,9 +45,9 @@ class DevExtensionLoader implements PreLaunchEntrypoint {
                         methods.add(metaMethod)
                     }
                 }, DevExtensionLoader.classLoader)
-                QuiltLoader.allMods.each {
-                    Path path = it.getPath(ExtensionModuleScanner.MODULE_META_INF_FILE)
-                    if (Files.exists(path)) {
+                FabricLoader.instance.allMods.each {
+                    Path path = it.findPath(ExtensionModuleScanner.MODULE_META_INF_FILE).orElse(null)
+                    if (path !== null && Files.exists(path)) {
                         Properties properties = new Properties()
                         properties.load(path.newReader())
                         if (properties.extensionClasses != null)

@@ -10,15 +10,15 @@ import com.google.common.collect.HashBiMap
 import groovy.json.JsonSlurper
 import groovy.transform.CompileStatic
 import groovy.transform.stc.POJO
+import net.fabricmc.loader.api.FabricLoader
+import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint
+import net.fabricmc.loader.impl.FabricLoaderImpl
+import org.groovymc.groovyduvet.core.impl.PlatformSpecificGetter
 import org.groovymc.groovyduvet.core.impl.compile.ClassMappings
 import net.fabricmc.api.EnvType
 import net.fabricmc.mappingio.MappedElementKind
 import net.fabricmc.mappingio.MappingVisitor
 import net.fabricmc.mappingio.format.ProGuardReader
-import org.quiltmc.loader.api.ModContainer
-import org.quiltmc.loader.api.QuiltLoader
-import org.quiltmc.loader.api.entrypoint.PreLaunchEntrypoint
-import org.quiltmc.loader.api.minecraft.MinecraftQuiltLoader
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -37,8 +37,8 @@ import java.util.zip.GZIPInputStream
 class MetaclassMappingsProvider implements PreLaunchEntrypoint {
     private static final String OFFICIAL_NAMESPACE = 'official'
     private static final String PISTON_META = 'https://piston-meta.mojang.com/mc/game/version_manifest_v2.json'
-    private static final Path CACHE_DIR = QuiltLoader.gameDir.resolve('mod_data/groovyduvet')
-    private static final String MC_VERSION = QuiltLoader.getRawGameVersion()
+    private static final String MC_VERSION = PlatformSpecificGetter.RAW_GAME_VERSION
+    private static final Path CACHE_DIR = FabricLoader.instance.gameDir.resolve('mod_data').resolve('groovyduvet').resolve(MC_VERSION)
     private static final Path OFFICIAL_FILE = CACHE_DIR.resolve("official_${MC_VERSION}.txt")
     private static final Path VERSION_FILE = CACHE_DIR.resolve("version_${MC_VERSION}.json")
     private static final JsonSlurper JSON_SLURPER = new JsonSlurper()
@@ -48,8 +48,8 @@ class MetaclassMappingsProvider implements PreLaunchEntrypoint {
     private static volatile HttpClient client = HttpClient.newBuilder().build()
 
     @Override
-    void onPreLaunch(ModContainer mod) {
-        if (!QuiltLoader.developmentEnvironment) {
+    void onPreLaunch() {
+        if (!FabricLoader.instance.developmentEnvironment) {
             setup()
         }
     }
@@ -137,11 +137,11 @@ class MetaclassMappingsProvider implements PreLaunchEntrypoint {
 
     private static void checkAndUpdateOfficialFile() throws IOException {
         Map versionMeta = (Map) JSON_SLURPER.parse(VERSION_FILE)
-        String sha1 = switch (MinecraftQuiltLoader.environmentType) {
+        String sha1 = switch (FabricLoader.instance.environmentType) {
             case EnvType.CLIENT -> ((versionMeta.downloads as Map).client_mappings as Map).sha1
             case EnvType.SERVER -> ((versionMeta.downloads as Map).server_mappings as Map).sha1
         }
-        String url = switch (MinecraftQuiltLoader.environmentType) {
+        String url = switch (FabricLoader.instance.environmentType) {
             case EnvType.CLIENT -> ((versionMeta.downloads as Map).client_mappings as Map).url
             case EnvType.SERVER -> ((versionMeta.downloads as Map).server_mappings as Map).url
         }
@@ -285,15 +285,15 @@ class MetaclassMappingsProvider implements PreLaunchEntrypoint {
         }
 
         String getRuntimeClassName() {
-            QuiltLoader.mappingResolver.mapClassName(OFFICIAL_NAMESPACE, lastClassObf)
+            FabricLoader.instance.mappingResolver.mapClassName(OFFICIAL_NAMESPACE, lastClassObf)
         }
 
         String getRuntimeMethodName(String obf) {
-            QuiltLoader.mappingResolver.mapMethodName(OFFICIAL_NAMESPACE, lastClassObf, obf, descMojToObf(lastMethodDesc))
+            FabricLoader.instance.mappingResolver.mapMethodName(OFFICIAL_NAMESPACE, lastClassObf, obf, descMojToObf(lastMethodDesc))
         }
 
         String getRuntimeFieldName(String obf) {
-            QuiltLoader.mappingResolver.mapFieldName(OFFICIAL_NAMESPACE, lastClassObf, obf, descMojToObf(lastFieldDesc))
+            FabricLoader.instance.mappingResolver.mapFieldName(OFFICIAL_NAMESPACE, lastClassObf, obf, descMojToObf(lastFieldDesc))
         }
 
         String descMojToObf(String moj) {
@@ -304,7 +304,7 @@ class MetaclassMappingsProvider implements PreLaunchEntrypoint {
 
         String descMojToRuntime(String moj) {
             descMojToObf(moj).replaceAll(/L(.*?);/, { full, inner ->
-                "L${QuiltLoader.mappingResolver.mapClassName(OFFICIAL_NAMESPACE, (inner as String).replace('/','.')).replace('.','/')};"
+                "L${FabricLoader.instance.mappingResolver.mapClassName(OFFICIAL_NAMESPACE, (inner as String).replace('/','.')).replace('.','/')};"
             })
         }
 

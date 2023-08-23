@@ -8,7 +8,7 @@ plugins {
     id 'groovy'
     id 'maven-publish'
     id 'signing'
-    alias libs.plugins.quilt.loom
+    alias libs.plugins.fabric.loom
     alias libs.plugins.quilt.licenser
     alias libs.plugins.mdg.plugin
     alias libs.plugins.simpleci
@@ -112,7 +112,7 @@ repositories {
 
 modsDotGroovy {
     dslVersion = libs.versions.mdg.dsl.get()
-    platform 'quilt'
+    platform 'fabric'
 }
 
 dependencies {
@@ -123,7 +123,7 @@ dependencies {
         officialMojangMappings()
         parchment("org.parchmentmc.data:parchment-${libs.versions.parchment.minecraft.get()}:${libs.versions.parchment.mappings.get()}@zip")
     }
-    modImplementation libs.quilt.loader
+    modImplementation libs.fabric.loader
 
     annotationProcessor libs.autoextension
     annotationProcessor libs.autoservice

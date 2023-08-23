@@ -7,11 +7,11 @@ package org.groovymc.groovyduvet.core.impl
 
 import groovy.transform.CompileStatic
 import groovy.transform.stc.POJO
+import net.fabricmc.loader.api.LanguageAdapterException
+import net.fabricmc.loader.api.ModContainer
 import org.codehaus.groovy.runtime.MethodClosure
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation
 import org.codehaus.groovy.runtime.typehandling.GroovyCastException
-import org.quiltmc.loader.api.LanguageAdapterException
-import org.quiltmc.loader.api.ModContainer
 
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method
