@@ -17,6 +17,13 @@ jobs:
               with:
                   distribution: "temurin"
                   java-version: 17
+            # note that if an equivalent to this is run on another branch, the following cache action should only restore
+            - uses: actions/cache@v3
+              with:
+                  path: |
+                    .gradle/loom-cache
+                  key: ${{ runner.os }}-gradle-${{ hashFiles('**/libs.versions.*', '**/*.gradle*', '**/gradle-wrapper.properties') }}
+                  restore-keys: ${{ runner.os }}-gradle-
             - uses: gradle/gradle-build-action@v2
               with:
                   arguments: checkLicenses build
