@@ -1,9 +1,3 @@
-buildscript {
-    dependencies {
-        classpath libs.tinyremapper
-    }
-}
-
 plugins {
     id 'groovy'
     id 'maven-publish'
@@ -41,11 +35,11 @@ license {
 }
 
 afterEvaluate {
-    /* tasks.withType(AbstractArchiveTask).configureEach {
+    tasks.withType(AbstractArchiveTask).configureEach {
         preserveFileTimestamps = false
         reproducibleFileOrder = true
         fileMode = dirMode = 0664
-    } */
+    }
 }
 
 static String getGitCommit() {
@@ -68,41 +62,16 @@ static String getGitCommitDate() {
 }
 
 configurations {
-    jacksonResolve
     includeCompileOnlyApi
-    modCompileOnlyApi.extendsFrom includeCompileOnlyApi
+    compileOnly.extendsFrom includeCompileOnlyApi
     include.extendsFrom includeCompileOnlyApi
 
     includeBundle
-    modCompileOnly.extendsFrom includeBundle
+    compileOnly.extendsFrom includeBundle
     include.extendsFrom includeBundle
 }
 
-configurations.configureEach {
-    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
-        if (details.requested.version == '<jackson-resolve>') {
-            details.useVersion configurations.jacksonResolve.resolvedConfiguration.resolvedArtifacts.find {
-                it.moduleVersion.id.group == details.requested.group && it.moduleVersion.id.name == details.requested.name
-            }.moduleVersion.id.version
-        }
-    }
-}
-
-// Fix TinyRemapper
-configurations.configureEach {
-    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
-        if (details.requested.module.with {it?.name == 'tiny-remapper' && it?.group == 'net.fabricmc'}) {
-            details.useTarget libs.tinyremapper
-        }
-    }
-}
-
 repositories {
-    // For TinyRemapper sans log spam
-    maven {
-        name = "Luke's Maven"
-        url = 'https://maven.lukebemish.dev/releases'
-    }
     maven {
         name = 'ParchmentMC'
         url = 'https://maven.parchmentmc.org'
@@ -116,8 +85,6 @@ modsDotGroovy {
 }
 
 dependencies {
-    jacksonResolve libs.groovy.toml
-
     minecraft libs.minecraft
     mappings loom.layered() {
         officialMojangMappings()
@@ -132,24 +99,7 @@ dependencies {
 
     includeBundle libs.mappingio
 
-    includeCompileOnlyApi libs.groovy.core
-    includeCompileOnlyApi libs.groovy.contracts
-    includeCompileOnlyApi libs.groovy.datetime
-    includeCompileOnlyApi libs.groovy.nio
-    includeCompileOnlyApi libs.groovy.macro.core
-    includeCompileOnlyApi libs.groovy.macro.library
-    includeCompileOnlyApi libs.groovy.templates
-    includeCompileOnlyApi libs.groovy.xml
-    includeCompileOnlyApi libs.groovy.typecheckers
-    includeCompileOnlyApi libs.groovy.dateutil
-    includeCompileOnlyApi libs.groovy.ginq
-    includeCompileOnlyApi libs.groovy.toml
-    includeCompileOnlyApi libs.groovy.json
-
-    includeBundle libs.jackson.core
-    includeBundle libs.jackson.annotations
-    includeBundle libs.jackson.databind
-    includeBundle libs.jackson.dataformat.toml
+    includeCompileOnlyApi libs.groovybundler
 }
 
 tasks.named('jar', Jar) {

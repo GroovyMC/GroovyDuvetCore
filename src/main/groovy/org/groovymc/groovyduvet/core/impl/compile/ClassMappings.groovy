@@ -16,7 +16,7 @@ final class ClassMappings {
     static final Map<String, Map<String, List<String>>> methods = [:]
     static final Map<String, Map<String, String>> fields = [:]
 
-    static addMappings(Map<String, String> mappings, Map<String, Map<String, List<String>>> methods, Map<String, Map<String, String>> fields) {
+    static synchronized addMappings(Map<String, String> mappings, Map<String, Map<String, List<String>>> methods, Map<String, Map<String, String>> fields) {
         mojToRuntime.clear()
         mojToRuntimePackages.clear()
         ClassMappings.methods.clear()

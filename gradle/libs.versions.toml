@@ -3,19 +3,16 @@ minecraft = "1.19.4"
 fabric_loader = "0.14.21"
 parchment_minecraft = "1.19.3"
 parchment_mappings = "2023.03.12"
-groovy = "4.0.15"
 mappingio = "0.4.2"
-fabric_loom = "1.2.7"
+fabric_loom = "1.4.1"
 quilt_licenser = "2.0.1"
-jackson = "<jackson-resolve>"
 autoservice = "1.1.1"
 autoextension = "0.1.1"
 mdg_plugin = "1.4.1"
-mdg_dsl = "1.5.0"
+mdg_dsl = "1.5.1"
 simpleci = "0.2.5"
 nexuspublish = "1.3.0"
-
-tinyremapper = "0.8.6+lukebemish.1+local"
+groovybundler = "1.0.1"
 
 [libraries]
 minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
@@ -23,29 +20,10 @@ fabric_loader = { module = "net.fabricmc:fabric-loader", version.ref = "fabric_l
 
 mappingio = { module = "net.fabricmc:mapping-io", version.ref = "mappingio" }
 
-tinyremapper = { module = "net.fabricmc:tiny-remapper", version.ref = "tinyremapper" }
-
-groovy_core = { module = "org.apache.groovy:groovy", version.ref = "groovy" }
-groovy_contracts = { module = "org.apache.groovy:groovy-contracts", version.ref = "groovy" }
-groovy_datetime = { module = "org.apache.groovy:groovy-datetime", version.ref = "groovy" }
-groovy_nio = { module = "org.apache.groovy:groovy-nio", version.ref = "groovy" }
-groovy_macro_core = { module = "org.apache.groovy:groovy-macro", version.ref = "groovy" }
-groovy_macro_library = { module = "org.apache.groovy:groovy-macro-library", version.ref = "groovy" }
-groovy_templates = { module = "org.apache.groovy:groovy-templates", version.ref = "groovy" }
-groovy_typecheckers = { module = "org.apache.groovy:groovy-typecheckers", version.ref = "groovy" }
-groovy_dateutil = { module = "org.apache.groovy:groovy-dateutil", version.ref = "groovy" }
-groovy_ginq = { module = "org.apache.groovy:groovy-ginq", version.ref = "groovy" }
-groovy_toml = { module = "org.apache.groovy:groovy-toml", version.ref = "groovy" }
-groovy_json = { module = "org.apache.groovy:groovy-json", version.ref = "groovy" }
-groovy_xml = { module = "org.apache.groovy:groovy-xml", version.ref = "groovy" }
-
-jackson_core = { module = "com.fasterxml.jackson.core:jackson-core", version.ref = "jackson" }
-jackson_annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson" }
-jackson_databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
-jackson_dataformat_toml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-toml", version.ref = "jackson" }
-
 autoservice = { module = "com.google.auto.service:auto-service", version.ref = "autoservice" }
 autoextension = { module = "dev.lukebemish.autoextension:autoextension", version.ref = "autoextension" }
+
+groovybundler = { module = "org.groovymc:groovybundler", version.ref = "groovybundler" }
 
 # For dependabot
 mdg_dsl = { module = "org.groovymc.modsdotgroovy:dsl", version.ref = "mdg_dsl" }
