@@ -23,7 +23,8 @@ public class ExtensionSideChecker {
     public static final String STATIC_CLASSES = "staticExtensionClasses";
     private static final String ONLYIN = "Lnet/minecraftforge/api/distmarker/OnlyIn;";
     private static final String ENVIRONMENT = "Lnet/fabricmc/api/Environment;";
-    private static final String EXTENSION = "Lio/github/groovymc/cgl/api/extension/EnvironmentExtension;";
+    private static final String LEGACY_EXTENSION = "Lio/github/groovymc/cgl/api/extension/EnvironmentExtension;";
+    private static final String EXTENSION = "Lorg/groovymc/cgl/api/extension/EnvironmentExtension;";
     private static final String SERVER_ONLY = "Lorg/quiltmc/loader/api/minecraft/DedicatedServerOnly;";
     private static final String CLIENT_ONLY = "Lorg/quiltmc/loader/api/minecraft/ClientOnly;";
 
@@ -41,32 +42,36 @@ public class ExtensionSideChecker {
             new ClassReader(stream).accept(new ClassVisitor(Opcodes.ASM9) {
                 @Override
                 public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
-                    if (desc.equals(ONLYIN) || desc.equals(ENVIRONMENT) || desc.equals(EXTENSION)) {
-                        return new AnnotationVisitor(Opcodes.ASM9) {
-                            @Override
-                            public void visitEnum(String name, String descriptor, String value) {
-                                if (name.equals("value")) {
-                                    String s = value.toUpperCase(Locale.ROOT);
-                                    if (s.equals("SERVER") || s.equals("DEDICATED_SERVER")) {
-                                        isOnDist.set(FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER);
-                                        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT)
-                                            LOGGER.info(skipOnClient, className);
-                                    } else if (s.equals("CLIENT")) {
-                                        isOnDist.set(FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT);
-                                        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER)
-                                            LOGGER.info(skipOnServer, className);
+                    switch (desc) {
+                        case ONLYIN, ENVIRONMENT, EXTENSION, LEGACY_EXTENSION -> {
+                            return new AnnotationVisitor(Opcodes.ASM9) {
+                                @Override
+                                public void visitEnum(String name, String descriptor, String value) {
+                                    if (name.equals("value")) {
+                                        String s = value.toUpperCase(Locale.ROOT);
+                                        if (s.equals("SERVER") || s.equals("DEDICATED_SERVER")) {
+                                            isOnDist.set(FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER);
+                                            if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT)
+                                                LOGGER.info(skipOnClient, className);
+                                        } else if (s.equals("CLIENT")) {
+                                            isOnDist.set(FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT);
+                                            if (FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER)
+                                                LOGGER.info(skipOnServer, className);
+                                        }
                                     }
                                 }
-                            }
-                        };
-                    } else if (desc.equals(SERVER_ONLY)) {
-                        isOnDist.set(FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER);
-                        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT)
-                            LOGGER.info(skipOnClient, className);
-                    } else if (desc.equals(CLIENT_ONLY)) {
-                        isOnDist.set(FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT);
-                        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER)
-                            LOGGER.info(skipOnServer, className);
+                            };
+                        }
+                        case SERVER_ONLY -> {
+                            isOnDist.set(FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER);
+                            if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT)
+                                LOGGER.info(skipOnClient, className);
+                        }
+                        case CLIENT_ONLY -> {
+                            isOnDist.set(FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT);
+                            if (FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER)
+                                LOGGER.info(skipOnServer, className);
+                        }
                     }
                     return super.visitAnnotation(desc, visible);
                 }
