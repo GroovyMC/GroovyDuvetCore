@@ -63,7 +63,7 @@ static String getGitCommitDate() {
 
 configurations {
     includeCompileOnlyApi
-    compileOnly.extendsFrom includeCompileOnlyApi
+    compileOnlyApi.extendsFrom includeCompileOnlyApi
     include.extendsFrom includeCompileOnlyApi
 
     includeBundle
