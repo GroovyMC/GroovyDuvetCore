@@ -212,8 +212,8 @@ class MetaclassMappingsProvider implements PreLaunchEntrypoint {
 
         void visitFile(IMappingFile mappings) {
             for (IMappingFile.IClass clazz : mappings.classes) {
-                String official = clazz.mapped
-                String obf = clazz.original
+                String official = clazz.mapped.replace('/', '.')
+                String obf = clazz.original.replace('/', '.')
                 mojToObf[official] = obf
                 classes[official] = getRuntimeClassName(obf)
             }
@@ -223,16 +223,16 @@ class MetaclassMappingsProvider implements PreLaunchEntrypoint {
                     String obf = method.original
                     String obfDesc = method.descriptor
                     String runtimeDesc = getRuntimeDesc(obfDesc)
-                    methods.computeIfAbsent(getRuntimeClassName(clazz.original), {[:]})
+                    methods.computeIfAbsent(getRuntimeClassName(clazz.original.replace('/', '.')), {[:]})
                         .computeIfAbsent(official, {[:]})
-                        .put(runtimeDesc, getRuntimeMethodName(clazz.original, obf, obfDesc))
+                        .put(runtimeDesc, getRuntimeMethodName(clazz.original.replace('/', '.'), obf, obfDesc))
                 }
                 for (IMappingFile.IField field : clazz.fields) {
                     String official = field.mapped
                     String obf = field.original
                     String obfDesc = field.descriptor
-                    fields.computeIfAbsent(getRuntimeClassName(clazz.original), {[:]})
-                        .put(official, getRuntimeFieldName(clazz.original, obf, obfDesc))
+                    fields.computeIfAbsent(getRuntimeClassName(clazz.original.replace('/', '.')), {[:]})
+                        .put(official, getRuntimeFieldName(clazz.original.replace('/', '.'), obf, obfDesc))
                 }
             }
         }
