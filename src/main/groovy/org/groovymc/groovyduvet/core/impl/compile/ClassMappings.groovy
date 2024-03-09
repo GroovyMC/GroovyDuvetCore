@@ -22,9 +22,6 @@ final class ClassMappings {
         ClassMappings.methods.clear()
         ClassMappings.fields.clear()
 
-        println methods
-        println fields
-
         ClassMappings.methods.putAll(methods)
         ClassMappings.fields.putAll(fields)
         ClassMappings.mojToRuntime.putAll(mappings)
