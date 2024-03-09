@@ -10,15 +10,13 @@ import com.google.common.collect.HashBiMap
 import groovy.json.JsonSlurper
 import groovy.transform.CompileStatic
 import groovy.transform.stc.POJO
+import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint
-import net.fabricmc.loader.impl.FabricLoaderImpl
+import net.neoforged.srgutils.IMappingFile
 import org.groovymc.groovyduvet.core.impl.PlatformSpecificGetter
 import org.groovymc.groovyduvet.core.impl.compile.ClassMappings
-import net.fabricmc.api.EnvType
-import net.fabricmc.mappingio.MappedElementKind
-import net.fabricmc.mappingio.MappingVisitor
-import net.fabricmc.mappingio.format.ProGuardReader
+import org.objectweb.asm.Type
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -177,10 +175,9 @@ class MetaclassMappingsProvider implements PreLaunchEntrypoint {
     }
 
     private static void loadLayeredMappings() throws IOException {
-        final mapper = new ClassmapVisitor()
-        ProGuardReader.read(Files.newBufferedReader(OFFICIAL_FILE), mapper)
-        final visitor = new LoadingVisitor(mapper.mojToObf)
-        ProGuardReader.read(Files.newBufferedReader(OFFICIAL_FILE), visitor)
+        final mappings = IMappingFile.load(OFFICIAL_FILE.newInputStream()).reverse()
+        final visitor = new LoadingVisitor()
+        visitor.visitFile(mappings)
         MappingMetaClassCreationHandle.applyCreationHandle(visitor.build())
     }
 
@@ -204,160 +201,76 @@ class MetaclassMappingsProvider implements PreLaunchEntrypoint {
         return isGzipEncoded ? new GZIPInputStream(response.body()) : response.body()
     }
 
-    private static class LoadingVisitor implements MappingVisitor {
+    private static class LoadingVisitor {
         // runtime class name (with dots) to map of moj -> runtime names
-        final Map<String, Map<String, List<String>>> methods = [:]
+        final Map<String, Map<String, Map<String, String>>> methods = [:]
         final Map<String, Map<String, String>> fields = [:]
         // moj class name to runtime class name
         final Map<String, String> classes = [:]
 
-        String lastClassObf
-        String lastClassMoj
-        String lastMethodMoj
-        String lastMethodDesc
-        String lastFieldMoj
-        String lastFieldDesc
+        final BiMap<String, String> mojToObf = HashBiMap.create()
 
-        final BiMap<String, String> mojToObf
-
-        LoadingVisitor(BiMap<String, String> mojToObf) {
-            this.mojToObf = mojToObf
-        }
-
-        @Override
-        void visitNamespaces(String srcNamespace, List<String> dstNamespaces) throws IOException {
-
-        }
-
-        @Override
-        boolean visitClass(String srcName) throws IOException {
-            lastClassMoj = srcName.replace('/','.')
-            return true
-        }
-
-        @Override
-        boolean visitField(String srcName, String srcDesc) throws IOException {
-            lastFieldMoj = srcName
-            lastFieldDesc = srcDesc
-            return true
-        }
-
-        @Override
-        boolean visitMethod(String srcName, String srcDesc) throws IOException {
-            lastMethodMoj = srcName
-            lastMethodDesc = srcDesc
-            return true
-        }
-
-        @Override
-        boolean visitMethodArg(int argPosition, int lvIndex, String srcName) throws IOException {
-            return false
-        }
-
-        @Override
-        boolean visitMethodVar(int lvtRowIndex, int lvIndex, int startOpIdx, String srcName) throws IOException {
-            return false
-        }
-
-        @Override
-        void visitDstName(MappedElementKind targetKind, int namespace, String name) throws IOException {
-            switch (targetKind) {
-                case MappedElementKind.CLASS:
-                    lastClassObf = name.replace('/','.')
-                    classes.put(lastClassMoj, getRuntimeClassName())
-                    break
-                case MappedElementKind.METHOD:
-                    methods.computeIfAbsent(getRuntimeClassName(), {[:]})
-                            .computeIfAbsent(lastMethodMoj, {[]}).add(getRuntimeMethodName(name))
-                    break
-                case MappedElementKind.FIELD:
-                    fields.computeIfAbsent(getRuntimeClassName(), {[:]})
-                            .put(lastFieldMoj, getRuntimeFieldName(name))
-                    break
-                default:
-                    break
+        void visitFile(IMappingFile mappings) {
+            for (IMappingFile.IClass clazz : mappings.classes) {
+                String official = clazz.mapped
+                String obf = clazz.original
+                mojToObf[official] = obf
+                classes[official] = getRuntimeClassName(obf)
+            }
+            for (IMappingFile.IClass clazz : mappings.classes) {
+                for (IMappingFile.IMethod method : clazz.methods) {
+                    String official = method.mapped
+                    String obf = method.original
+                    String obfDesc = method.descriptor
+                    String runtimeDesc = getRuntimeDesc(obfDesc)
+                    methods.computeIfAbsent(getRuntimeClassName(clazz.original), {[:]})
+                        .computeIfAbsent(official, {[:]})
+                        .put(runtimeDesc, getRuntimeMethodName(clazz.original, obf, obfDesc))
+                }
+                for (IMappingFile.IField field : clazz.fields) {
+                    String official = field.mapped
+                    String obf = field.original
+                    String obfDesc = field.descriptor
+                    fields.computeIfAbsent(getRuntimeClassName(clazz.original), {[:]})
+                        .put(official, getRuntimeFieldName(clazz.original, obf, obfDesc))
+                }
             }
         }
 
-        @Override
-        void visitComment(MappedElementKind targetKind, String comment) throws IOException {
-
+        static String getRuntimeClassName(String obf) {
+            FabricLoader.instance.mappingResolver.mapClassName(OFFICIAL_NAMESPACE, obf)
         }
 
-        String getRuntimeClassName() {
-            FabricLoader.instance.mappingResolver.mapClassName(OFFICIAL_NAMESPACE, lastClassObf)
+        static String getRuntimeMethodName(String classObf, String obf, String desc) {
+            FabricLoader.instance.mappingResolver.mapMethodName(OFFICIAL_NAMESPACE, classObf, obf, desc)
         }
 
-        String getRuntimeMethodName(String obf) {
-            FabricLoader.instance.mappingResolver.mapMethodName(OFFICIAL_NAMESPACE, lastClassObf, obf, descMojToObf(lastMethodDesc))
+        static String getRuntimeFieldName(String classObf, String obf, String desc) {
+            FabricLoader.instance.mappingResolver.mapFieldName(OFFICIAL_NAMESPACE, classObf, obf, desc)
         }
 
-        String getRuntimeFieldName(String obf) {
-            FabricLoader.instance.mappingResolver.mapFieldName(OFFICIAL_NAMESPACE, lastClassObf, obf, descMojToObf(lastFieldDesc))
+        static String getRuntimeDesc(String desc) {
+            Type type = Type.getMethodType(desc)
+            Type returnType = remapType(type.returnType)
+            List<Type> argsTypes = type.argumentTypes.collect { remapType(it) }
+            return Type.getMethodType(returnType, argsTypes as Type[]).descriptor
         }
 
-        String descMojToObf(String moj) {
-            moj.replaceAll(/L(.*?);/,{ full, inner ->
-                "L${mojToObf[inner]?:inner};"
-            })
-        }
-
-        String descMojToRuntime(String moj) {
-            descMojToObf(moj).replaceAll(/L(.*?);/, { full, inner ->
-                "L${FabricLoader.instance.mappingResolver.mapClassName(OFFICIAL_NAMESPACE, (inner as String).replace('/','.')).replace('.','/')};"
-            })
+        private static Type remapType(Type type) {
+            switch (type.sort) {
+                case Type.OBJECT:
+                    String className = type.className
+                    return Type.getObjectType(getRuntimeClassName(className).replace('.', '/'))
+                case Type.ARRAY:
+                    return Type.getType("["+remapType(type.elementType).descriptor)
+                default:
+                    return type
+            }
         }
 
         LoadedMappings build() {
             ClassMappings.addMappings(classes, methods, fields)
             return new LoadedMappings(methods, fields)
-        }
-    }
-
-    private static class ClassmapVisitor implements MappingVisitor {
-        BiMap<String, String> mojToObf = HashBiMap.create()
-
-        String lastClassMoj
-
-        @Override
-        void visitNamespaces(String srcNamespace, List<String> dstNamespaces) throws IOException {
-
-        }
-
-        @Override
-        boolean visitClass(String srcName) throws IOException {
-            return lastClassMoj = srcName
-        }
-
-        @Override
-        boolean visitField(String srcName, String srcDesc) throws IOException {
-            return false
-        }
-
-        @Override
-        boolean visitMethod(String srcName, String srcDesc) throws IOException {
-            return false
-        }
-
-        @Override
-        boolean visitMethodArg(int argPosition, int lvIndex, String srcName) throws IOException {
-            return false
-        }
-
-        @Override
-        boolean visitMethodVar(int lvtRowIndex, int lvIndex, int startOpIdx, String srcName) throws IOException {
-            return false
-        }
-
-        @Override
-        void visitDstName(MappedElementKind targetKind, int namespace, String name) throws IOException {
-            if (targetKind == MappedElementKind.CLASS)
-                mojToObf[lastClassMoj] = name
-        }
-
-        @Override
-        void visitComment(MappedElementKind targetKind, String comment) throws IOException {
-
         }
     }
 }

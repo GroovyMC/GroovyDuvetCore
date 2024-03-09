@@ -16,12 +16,14 @@ class LoadedMappings {
     final Map<String, Map<String, String>> fields
     final Set<String> mappable
 
-    LoadedMappings(Map<String, Map<String, List<String>>> methods, Map<String, Map<String, String>> fields) {
-        this.methods = methods
+    LoadedMappings(Map<String, Map<String, Map<String, String>>> methods, Map<String, Map<String, String>> fields) {
+        this.methods = methods.collectEntries {k, v ->
+            [(k): v.collectEntries {k2, v2 -> [(k2): v2.values().collect()]}]
+        }
         this.fields = fields
 
         List<String> emptyRemovalQueue = []
-        methods.each (className,methodMap) -> {
+        this.methods.each (className,methodMap) -> {
             List<String> noKnownMappingsRemovalQueue = []
             methodMap.forEach(official,srg) -> {
                 List<String> unnecessaryRemovalQueue = []
@@ -37,10 +39,10 @@ class LoadedMappings {
                 emptyRemovalQueue.add(className)
             }
         }
-        emptyRemovalQueue.each {methods.remove it}
+        emptyRemovalQueue.each {this.methods.remove it}
 
         emptyRemovalQueue.clear()
-        fields.forEach (className,fieldMap) -> {
+        this.fields.forEach (className,fieldMap) -> {
             List<String> unnecessaryRemovalQueue = []
             fieldMap.forEach (official,srg) -> {
                 if (official==srg) unnecessaryRemovalQueue.add(official)
@@ -52,7 +54,7 @@ class LoadedMappings {
                 emptyRemovalQueue.add(className)
             }
         }
-        emptyRemovalQueue.each {fields.remove it}
+        emptyRemovalQueue.each {this.fields.remove it}
 
         this.mappable = methods.keySet() + fields.keySet()
     }

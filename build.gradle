@@ -9,8 +9,6 @@ plugins {
     alias libs.plugins.nexuspublish
 }
 
-project.buildDir.mkdirs()
-
 tasks.changelog {
     gitDir = project.file('./')
     start = '2.1.13'
@@ -80,7 +78,7 @@ repositories {
 }
 
 modsDotGroovy {
-    dslVersion = libs.versions.mdg.dsl.get()
+    dslVersion = libs.mdg.dsl.get().version
     platform 'fabric'
 }
 
@@ -97,7 +95,7 @@ dependencies {
     compileOnly libs.autoextension
     compileOnly libs.autoservice
 
-    includeBundle libs.mappingio
+    includeBundle libs.srgutils
 
     includeCompileOnlyApi libs.groovybundler
 }

@@ -10,35 +10,33 @@ import dev.lukebemish.opensesame.runtime.RuntimeRemapper;
 import org.groovymc.groovyduvet.core.impl.compile.ClassMappings;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
+import java.util.Map;
 
 @AutoService(RuntimeRemapper.class)
 public class RuntimeRemapperImpl implements RuntimeRemapper {
     @Override
-    public @Nullable String remapMethodName(Class<?> parent, String name, Class<?>[] args) {
-        String className = parent.getName();
+    public @Nullable String remapMethodName(String className, String name, String methodDesc) {
         var methods = ClassMappings.getMethods().get(className);
         if (methods != null) {
-            List<String> methodNames = methods.get(name);
+            Map<String, String> methodNames = methods.get(name);
             if (methodNames != null) {
-                for (String methodName : methodNames) {
-                    try {
-                        parent.getDeclaredMethod(methodName, args);
-                        return methodName;
-                    } catch (NoSuchMethodException ignored) {}
-                }
+                return methodNames.get(methodDesc);
             }
         }
         return null;
     }
 
     @Override
-    public @Nullable String remapFieldName(Class<?> parent, String name) {
-        String className = parent.getName();
+    public @Nullable String remapFieldName(String className, String name, String type) {
         var fields = ClassMappings.getFields().get(className);
         if (fields != null) {
             return fields.get(name);
         }
         return null;
+    }
+
+    @Override
+    public @Nullable String remapClassName(String className) {
+        return ClassMappings.getMojToRuntime().get(className);
     }
 }
